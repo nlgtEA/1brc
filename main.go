@@ -19,7 +19,7 @@ func main() {
 
 	output := evaluate(*file_path)
 
-	fmt.Fprintln(os.Stdout, "{", output, "}")
+    fmt.Printf("{%s}\n", output)
 }
 
 func check(e error) {
