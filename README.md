@@ -8,11 +8,13 @@ The original solution with the tests I re-use for this repository:
 
 
 The benchmarking results are run on my personal MacBook Pro 2020, 1.4 GHz Quad-Core Intel Core i5, 8 GB 2133 MHz LPDDR3.
+
 The measurement file is about 13GB in size.
+
 As a baseline, the original naive Java implementation took 3:55.68 to run on this machine.
 
 ## 🚀 Results
 
 | Attempt Number | Approach | Execution Time | Diff | Commit |
 |-----------------|---|---|---|--|
-|0| Naive Implementation: Read the file line by line into a map with key is the city name, and value is an array of 4 int of min, sum, max, avg value respectively (the original temp is scaled by a factor of 10 to avoid the cumbersone from adding and rounding float numbers) | 10:01.12 | | [753528e](https://github.com/nlgtEA/2brc/commit/753528e8ac928a9525c60cfc648d3f3329dd631b)|
+|0| Naive Implementation: Read the file line by line into a map with key is the city name, and value is an array of 4 int of min, sum, max, avg value respectively (the original temp is scaled by a factor of 10 to avoid the cumbersone from adding and rounding float numbers) | 10:01.12 | | [753528e8](https://github.com/nlgtEA/1brc/commit/753528e8ac928a9525c60cfc648d3f3329dd631b)|
