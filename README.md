@@ -17,4 +17,4 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 
 | Attempt Number | Approach | Execution Time | Diff | Commit |
 |-----------------|---|---|---|--|
-|0| Naive Implementation: Read the file line by line into a map with key is the city name, and value is an array of 4 int of min, sum, max, avg value respectively (the original temp is scaled by a factor of 10 to avoid the cumbersone from adding and rounding float numbers) | 10:01.12 | | [753528e8](https://github.com/nlgtEA/1brc/commit/753528e8ac928a9525c60cfc648d3f3329dd631b)|
+|0| Naive Implementation: Read the file line by line into a map with key is the city name, and value is an array of 4 int of min, sum, max, avg value respectively (the original temp is scaled by a factor of 10 to avoid the cumbersone from adding and rounding float numbers) | 7:11.47 | | [753528e8](https://github.com/nlgtEA/1brc/commit/753528e8ac928a9525c60cfc648d3f3329dd631b)|
