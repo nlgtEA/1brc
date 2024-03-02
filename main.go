@@ -19,7 +19,7 @@ func main() {
 
 	output := evaluate(*file_path)
 
-    fmt.Printf("{%s}\n", output)
+	fmt.Printf("{%s}\n", output)
 }
 
 func check(e error) {
@@ -74,10 +74,12 @@ func evaluate(inp string) string {
 		}
 	}
 
-	computedValues := make([]computedValue, 0, len(resultMap))
+	computedValues := make([]computedValue, len(resultMap))
 
+	count := 0
 	for k, v := range resultMap {
-		computedValues = append(computedValues, computedValue{k, float64(v[0]) / 10, math.Round(float64(v[1])/float64(v[3])) / 10, float64(v[2]) / 10})
+		computedValues[count] = computedValue{k, float64(v[0]) / 10, math.Round(float64(v[1])/float64(v[3])) / 10, float64(v[2]) / 10}
+		count++
 	}
 	sort.Slice(computedValues, func(i, j int) bool {
 		return computedValues[i].city < computedValues[j].city
