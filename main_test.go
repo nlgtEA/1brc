@@ -20,6 +20,12 @@ func TestMain(t *testing.T) {
 	}
 }
 
+func BenchmarkEvaluate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		evaluate("./measurements-50M.txt")
+	}
+}
+
 func readFile(input string) string {
 	fileContent, err := os.ReadFile(input)
 	if err != nil {
