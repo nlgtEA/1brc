@@ -67,28 +67,10 @@ func readWeather(inp string, c chan weatherData) {
 	}
 }
 
-func computeWeather(c chan weatherData, rc chan string) {
-	// {"city": [min, sum, max, count]}
-	resultMap := make(map[string][]int)
-	for v := range c {
-		if _, ok := resultMap[v.city]; ok {
-			if v.temp < resultMap[v.city][0] {
-				resultMap[v.city][0] = v.temp
-			}
-			if v.temp > resultMap[v.city][2] {
-				resultMap[v.city][2] = v.temp
-			}
-			resultMap[v.city][1] += v.temp
-			resultMap[v.city][3]++
-		} else {
-			resultMap[v.city] = []int{v.temp, v.temp, v.temp, 1}
-		}
-	}
+func computeWeather(resultMap map[string][]int, rc chan string) {
+	computedCh := make(chan computedValue, len(resultMap))
 
-	computedValues := make([]computedValue, 0, len(resultMap))
-	computedCh := make(chan computedValue)
 	count := 0
-
 	for k, v := range resultMap {
 		// computedValues = append(computedValues, computedValue{k, float64(v[0]) / 10, math.Round(float64(v[1])/float64(v[3])) / 10, float64(v[2]) / 10})
 		go func(city string, val []int, c chan computedValue) {
@@ -97,13 +79,10 @@ func computeWeather(c chan weatherData, rc chan string) {
 		count++
 	}
 
-	// for v := range computedCh {
-	// 	computedValues = append(computedValues, v)
-	// }
-
+	computedValues := make([]computedValue, len(resultMap))
 	for count > 0 {
 		v := <-computedCh
-		computedValues = append(computedValues, v)
+		computedValues[count - 1] = v
 		count--
 	}
 
@@ -126,11 +105,46 @@ func computeWeather(c chan weatherData, rc chan string) {
 }
 
 func evaluate(inp string) string {
-	c := make(chan weatherData)
-	rc := make(chan string)
+	// {"city": [min, sum, max, count]}
+	resultMap := make(map[string][]int)
 
-	go readWeather(inp, c)
-	go computeWeather(c, rc)
+	f, err := os.Open(inp)
+	check(err)
+	defer f.Close()
+
+	r := bufio.NewReader(f)
+
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				panic(err)
+			}
+		}
+
+		parsed := strings.Split(line, ";")
+		name := parsed[0]
+		fTemp, _ := strconv.ParseFloat(parsed[1][:len(parsed[1])-1], 64)
+		temp := int(fTemp * 10)
+
+		if _, ok := resultMap[name]; ok {
+			if temp < resultMap[name][0] {
+				resultMap[name][0] = temp
+			}
+			if temp > resultMap[name][2] {
+				resultMap[name][2] = temp
+			}
+			resultMap[name][1] += temp
+			resultMap[name][3]++
+		} else {
+			resultMap[name] = []int{temp, temp, temp, 1}
+		}
+	}
+
+	rc := make(chan string)
+	go computeWeather(resultMap, rc)
 	res := <-rc
 
 	return res
