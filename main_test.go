@@ -43,7 +43,11 @@ func find(root, ext string) []string {
 }
 
 func BenchmarkEvaluate(b *testing.B) {
+	var r string
+
 	for i := 0; i < b.N; i++ {
-		evaluate("./measurements-50M.txt")
+		r = evaluate("./measurements-1M.txt")
 	}
+
+	_ = r
 }
