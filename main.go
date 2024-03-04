@@ -67,43 +67,6 @@ func readWeather(inp string, c chan weatherData) {
 	}
 }
 
-func computeWeather(resultMap map[string][]int, rc chan string) {
-	computedCh := make(chan computedValue, len(resultMap))
-
-	count := 0
-	for k, v := range resultMap {
-		// computedValues = append(computedValues, computedValue{k, float64(v[0]) / 10, math.Round(float64(v[1])/float64(v[3])) / 10, float64(v[2]) / 10})
-		go func(city string, val []int, c chan computedValue) {
-			c <- computedValue{city, float64(val[0]) / 10, math.Round(float64(val[1])/float64(val[3])) / 10, float64(val[2]) / 10}
-		}(k, v, computedCh)
-		count++
-	}
-
-	computedValues := make([]computedValue, len(resultMap))
-	for count > 0 {
-		v := <-computedCh
-		computedValues[count - 1] = v
-		count--
-	}
-
-	sort.Slice(computedValues, func(i, j int) bool {
-		return computedValues[i].city < computedValues[j].city
-	})
-	strBuilder := strings.Builder{}
-	for _, v := range computedValues {
-		strBuilder.WriteString(v.city)
-		strBuilder.WriteString("=")
-		strBuilder.WriteString(fmt.Sprintf("%.1f", v.min))
-		strBuilder.WriteString("/")
-		strBuilder.WriteString(fmt.Sprintf("%.1f", v.avg))
-		strBuilder.WriteString("/")
-		strBuilder.WriteString(fmt.Sprintf("%.1f", v.max))
-		strBuilder.WriteString(", ")
-	}
-
-	rc <- strBuilder.String()[:strBuilder.Len()-2]
-}
-
 func evaluate(inp string) string {
 	// {"city": [min, sum, max, count]}
 	resultMap := make(map[string][]int)

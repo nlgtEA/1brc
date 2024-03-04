@@ -20,12 +20,6 @@ func TestMain(t *testing.T) {
 	}
 }
 
-func BenchmarkEvaluate(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		evaluate("./measurements-50M.txt")
-	}
-}
-
 func readFile(input string) string {
 	fileContent, err := os.ReadFile(input)
 	if err != nil {
@@ -48,11 +42,21 @@ func find(root, ext string) []string {
 	return a
 }
 
-func BenchmarkEvaluate(b *testing.B) {
+func BenchmarkEvaluate1M(b *testing.B) {
 	var r string
 
 	for i := 0; i < b.N; i++ {
 		r = evaluate("./measurements-1M.txt")
+	}
+
+	_ = r
+}
+
+func BenchmarkEvaluate10M(b *testing.B) {
+	var r string
+
+	for i := 0; i < b.N; i++ {
+		r = evaluate("./measurements-10M.txt")
 	}
 
 	_ = r

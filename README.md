@@ -23,14 +23,13 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
-This bechmark is ran using go testing bench, on a file with 1M rows, so it's supposed to be more stable and reliable.
+This bechmark is ran using go testing bench, on a file with 1M and 10M rows, so it's supposed to be more stable and reliable.
 
 ```bash
-go test -bench=. Evaluate -count=1 -cpu=4
+make bench
 ```
 
 
-| Attempt Number | Time (ns/op) | Diff |
+| Attempt Number | Evaluate 1M | Evaluate 10M |
 |----------------|---|---|
-|0| TBU | |
-|0| 308996589 | |
+|1| 293.0m +- 5% | 2.915 +- 1%|
