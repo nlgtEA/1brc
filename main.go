@@ -143,9 +143,28 @@ func evaluate(inp string) string {
 		}
 	}
 
-	rc := make(chan string)
-	go computeWeather(resultMap, rc)
-	res := <-rc
+	computedValues := make([]computedValue, len(resultMap))
 
-	return res
+	count := 0
+	for k, v := range resultMap {
+		computedValues[count] = computedValue{k, float64(v[0]) / 10, math.Round(float64(v[1])/float64(v[3])) / 10, float64(v[2]) / 10}
+		count++
+	}
+	sort.Slice(computedValues, func(i, j int) bool {
+		return computedValues[i].city < computedValues[j].city
+	})
+
+	strBuilder := strings.Builder{}
+	for _, v := range computedValues {
+		strBuilder.WriteString(v.city)
+		strBuilder.WriteString("=")
+		strBuilder.WriteString(fmt.Sprintf("%.1f", v.min))
+		strBuilder.WriteString("/")
+		strBuilder.WriteString(fmt.Sprintf("%.1f", v.avg))
+		strBuilder.WriteString("/")
+		strBuilder.WriteString(fmt.Sprintf("%.1f", v.max))
+		strBuilder.WriteString(", ")
+	}
+
+	return strBuilder.String()[:strBuilder.Len()-2]
 }
