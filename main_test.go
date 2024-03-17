@@ -51,13 +51,3 @@ func BenchmarkEvaluate1M(b *testing.B) {
 
 	_ = r
 }
-
-func BenchmarkEvaluate10M(b *testing.B) {
-	var r string
-
-	for i := 0; i < b.N; i++ {
-		r = evaluate("./measurements-10M.txt")
-	}
-
-	_ = r
-}

@@ -40,33 +40,6 @@ type weatherData struct {
 	temp int
 }
 
-func readWeather(inp string, c chan weatherData) {
-	f, err := os.Open(inp)
-	check(err)
-	defer f.Close()
-
-	r := bufio.NewReader(f)
-
-	for {
-		line, err := r.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				close(c)
-				break
-			} else {
-				panic(err)
-			}
-		}
-
-		parsed := strings.Split(line, ";")
-		name := parsed[0]
-		fTemp, _ := strconv.ParseFloat(parsed[1][:len(parsed[1])-1], 64)
-		temp := int(fTemp * 10)
-
-		c <- weatherData{name, temp}
-	}
-}
-
 func evaluate(inp string) string {
 	// {"city": [min, sum, max, count]}
 	resultMap := make(map[string][]int)
