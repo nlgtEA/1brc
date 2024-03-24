@@ -17,11 +17,11 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 
 | Attempt Number | Approach | Execution Time (m:ss) | Diff | Commit |
 |-----------------|---|---|---|--|
-
+|1| Naive approach, read data to map and process sequentially | 4:57.19 | - | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
-This bechmark is ran using go testing bench, on a file with 1M and 10M rows, so it's supposed to be more stable and reliable.
+This bechmark is ran using go testing bench, on a file with 1M rows, so it's supposed to be more stable and reliable.
 
 ```bash
 make bench
@@ -30,3 +30,4 @@ make bench
 
 | Attempt Number | Evaluate 1M | Evaluate 10M |
 |----------------|---|---|
+| 1 | 289ms |  |

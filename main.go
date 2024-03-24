@@ -35,11 +35,6 @@ type computedValue struct {
 	max  float64
 }
 
-type weatherData struct {
-	city string
-	temp int
-}
-
 func evaluate(inp string) string {
 	// {"city": [min, sum, max, count]}
 	resultMap := make(map[string][]int)
