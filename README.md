@@ -18,6 +18,7 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 | Attempt Number | Approach | Execution Time (m:ss) | Diff | Commit |
 |-----------------|---|---|---|--|
 |1| Naive approach, read data to map and process sequentially | 4:57.19 | - | - |
+|2| Using readSlice and custom parseInt function  | 4:18.95 | - | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
@@ -31,3 +32,4 @@ make bench
 | Attempt Number | Evaluate 1M | Evaluate 10M |
 |----------------|---|---|
 | 1 | 289ms |  |
+| 2 | 245ms |  |

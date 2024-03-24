@@ -18,6 +18,13 @@ func TestMain(t *testing.T) {
 			assert.Equal(t, readFile(test+".out"), "{"+output+"}\n")
 		})
 	}
+
+    // test := "./test_cases/measurements-20"
+	// t.Run(test, func(t *testing.T) {
+		// output := evaluate(test + ".txt")
+		// assert.Equal(t, readFile(test+".out"), "{"+output+"}\n")
+	// })
+
 }
 
 func readFile(input string) string {

@@ -2,20 +2,34 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"math"
 	"os"
+	"runtime/pprof"
 	"sort"
-	"strconv"
 	"strings"
 )
 
 var file_path = flag.String("file", "test_cases/measurements-10.txt", "path to the file")
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 
 func main() {
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		if err := pprof.StartCPUProfile(f); err != nil {
+			panic(err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	output := evaluate(*file_path)
 
@@ -35,6 +49,29 @@ type computedValue struct {
 	max  float64
 }
 
+func parseTempToInt(rawTemp []byte) int {
+	temp := 0
+	isNegative := false
+
+	if rawTemp[0] == 45 {
+		isNegative = true
+		rawTemp = rawTemp[1:]
+	}
+
+	l := len(rawTemp)
+	if l == 4 {
+		temp = int(rawTemp[0])*100 + int(rawTemp[1])*10 + int(rawTemp[3]) - 5328
+	} else {
+		temp = int(rawTemp[0])*10 + int(rawTemp[2]) - 528
+	}
+
+	if isNegative {
+		temp = -temp
+	}
+
+	return temp
+}
+
 func evaluate(inp string) string {
 	// {"city": [min, sum, max, count]}
 	resultMap := make(map[string][]int)
@@ -46,7 +83,7 @@ func evaluate(inp string) string {
 	r := bufio.NewReader(f)
 
 	for {
-		line, err := r.ReadString('\n')
+		line, err := r.ReadSlice('\n')
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -55,10 +92,11 @@ func evaluate(inp string) string {
 			}
 		}
 
-		parsed := strings.Split(line, ";")
-		name := parsed[0]
-		fTemp, _ := strconv.ParseFloat(parsed[1][:len(parsed[1])-1], 64)
-		temp := int(fTemp * 10)
+		line = line[:len(line)-1]
+
+		parsed := bytes.Split(line, []byte{';'})
+		name := string(parsed[0])
+		temp := parseTempToInt(parsed[1])
 
 		if _, ok := resultMap[name]; ok {
 			if temp < resultMap[name][0] {
