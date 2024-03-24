@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -12,6 +11,8 @@ import (
 	"sort"
 	"strings"
 )
+
+const READ_BUFFER_SIZE = 1024 * 1024 * 20
 
 var file_path = flag.String("file", "test_cases/measurements-10.txt", "path to the file")
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -72,28 +73,10 @@ func parseTempToInt(rawTemp []byte) int {
 	return temp
 }
 
-func evaluate(inp string) string {
-	// {"city": [min, sum, max, count]}
-	resultMap := make(map[string][]int)
+func processReadBuffer(validChunk []byte, resultMap map[string][]int) {
+	lines := bytes.Split(validChunk, []byte{'\n'})
 
-	f, err := os.Open(inp)
-	check(err)
-	defer f.Close()
-
-	r := bufio.NewReader(f)
-
-	for {
-		line, err := r.ReadSlice('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				panic(err)
-			}
-		}
-
-		line = line[:len(line)-1]
-
+	for _, line := range lines {
 		parsed := bytes.Split(line, []byte{';'})
 		name := string(parsed[0])
 		temp := parseTempToInt(parsed[1])
@@ -110,6 +93,41 @@ func evaluate(inp string) string {
 		} else {
 			resultMap[name] = []int{temp, temp, temp, 1}
 		}
+	}
+}
+
+func evaluate(inp string) string {
+	// {"city": [min, sum, max, count]}
+	resultMap := make(map[string][]int)
+
+	f, err := os.Open(inp)
+	check(err)
+	defer f.Close()
+
+	readBuffer := make([]byte, READ_BUFFER_SIZE)
+	leftOver := make([]byte, READ_BUFFER_SIZE)
+	validChunk := make([]byte, READ_BUFFER_SIZE*2)
+
+	leftOverSize := 0
+
+	for {
+		n, err := f.Read(readBuffer)
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				panic(err)
+			}
+		}
+
+		lastNewlineIdx := bytes.LastIndex(readBuffer[:n], []byte{'\n'})
+
+		size := copy(validChunk, leftOver[:leftOverSize])
+		validChunk = append(validChunk[:size], readBuffer[:lastNewlineIdx]...)
+
+		processReadBuffer(validChunk, resultMap)
+
+		leftOverSize = copy(leftOver, readBuffer[lastNewlineIdx+1:n])
 	}
 
 	computedValues := make([]computedValue, len(resultMap))

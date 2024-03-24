@@ -19,10 +19,11 @@ func TestMain(t *testing.T) {
 		})
 	}
 
-    // test := "./test_cases/measurements-20"
+    // test := "./test_cases/measurements-10000-unique-keys"
+    // test := "./test_cases/measurements-1"
 	// t.Run(test, func(t *testing.T) {
-		// output := evaluate(test + ".txt")
-		// assert.Equal(t, readFile(test+".out"), "{"+output+"}\n")
+	// 	output := evaluate(test + ".txt")
+	// 	assert.Equal(t, readFile(test+".out"), "{"+output+"}\n")
 	// })
 
 }

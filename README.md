@@ -19,6 +19,9 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 |-----------------|---|---|---|--|
 |1| Naive approach, read data to map and process sequentially | 4:57.19 | - | - |
 |2| Using readSlice and custom parseInt function  | 4:18.95 | - | - |
+|3| Read file by chunks of 20MB  | 4:07.94 | - | - |
+|3.1| Read file by chunks of 100MB  | 4:14.20 | - | - |
+|3.1| Read file by chunks of 50MB  | 4:09.89 | - | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
@@ -33,3 +36,4 @@ make bench
 |----------------|---|---|
 | 1 | 289ms |  |
 | 2 | 245ms |  |
+| 3 | 254ms |  |
