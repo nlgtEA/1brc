@@ -15,13 +15,14 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 
 ## 🚀 Results
 
-| Attempt Number | Approach | Execution Time (m:ss) | Diff | Commit |
+| Attempt Number | Approach | Execution Time (m:ss) | Note | Commit |
 |-----------------|---|---|---|--|
 |1| Naive approach, read data to map and process sequentially | 4:57.19 | - | - |
 |2| Using readSlice and custom parseInt function  | 4:18.95 | - | - |
 |3| Read file by chunks of 20MB  | 4:07.94 | - | - |
 |3.1| Read file by chunks of 100MB  | 4:14.20 | - | - |
 |3.1| Read file by chunks of 50MB  | 4:09.89 | - | - |
+|4| Using concurrency with 6 worker in total including main thread  | 1:27.80 | The chunk size of 20MB and 6 gouroutines seems to be the sweet spot. Other set up are drastically slower, usually take around 3m50s. And not sure why it's not faster in the case of 1M row file. | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
@@ -37,3 +38,4 @@ make bench
 | 1 | 289ms |  |
 | 2 | 245ms |  |
 | 3 | 254ms |  |
+| 4 | 241ms |  |
