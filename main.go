@@ -84,9 +84,16 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 		lines := bytes.Split(validChunk, []byte{'\n'})
 
 		for _, line := range lines {
-			parsed := bytes.Split(line, []byte{';'})
-			name := string(parsed[0])
-			temp := parseTempToInt(parsed[1])
+			idx := 0
+			for i, v := range line {
+				if v == ';' {
+					idx = i
+					break
+				}
+			}
+
+			name := string(line[:idx])
+			temp := parseTempToInt(line[idx+1:])
 
 			if _, ok := resultMap[name]; ok {
 				if temp < resultMap[name][0] {
