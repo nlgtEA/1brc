@@ -10,9 +10,13 @@ import (
 	"runtime/pprof"
 	"sort"
 	"strings"
+	"sync"
 )
 
-const READ_BUFFER_SIZE = 1024 * 1024 * 20
+const (
+	READ_BUFFER_SIZE = 1024 * 1024 * 20
+	CONCURENT_GRADE  = 5
+)
 
 var file_path = flag.String("file", "test_cases/measurements-10.txt", "path to the file")
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -73,37 +77,36 @@ func parseTempToInt(rawTemp []byte) int {
 	return temp
 }
 
-func processReadBuffer(validChunk []byte, resultMap map[string][]int) {
-	lines := bytes.Split(validChunk, []byte{'\n'})
-
-	for _, line := range lines {
-		parsed := bytes.Split(line, []byte{';'})
-		name := string(parsed[0])
-		temp := parseTempToInt(parsed[1])
-
-		if _, ok := resultMap[name]; ok {
-			if temp < resultMap[name][0] {
-				resultMap[name][0] = temp
-			}
-			if temp > resultMap[name][2] {
-				resultMap[name][2] = temp
-			}
-			resultMap[name][1] += temp
-			resultMap[name][3]++
-		} else {
-			resultMap[name] = []int{temp, temp, temp, 1}
-		}
-	}
-}
-
-func evaluate(inp string) string {
-	// {"city": [min, sum, max, count]}
+func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int) {
 	resultMap := make(map[string][]int)
 
-	f, err := os.Open(inp)
-	check(err)
-	defer f.Close()
+	for validChunk := range chunk_chans {
+		lines := bytes.Split(validChunk, []byte{'\n'})
 
+		for _, line := range lines {
+			parsed := bytes.Split(line, []byte{';'})
+			name := string(parsed[0])
+			temp := parseTempToInt(parsed[1])
+
+			if _, ok := resultMap[name]; ok {
+				if temp < resultMap[name][0] {
+					resultMap[name][0] = temp
+				}
+				if temp > resultMap[name][2] {
+					resultMap[name][2] = temp
+				}
+				resultMap[name][1] += temp
+				resultMap[name][3]++
+			} else {
+				resultMap[name] = []int{temp, temp, temp, 1}
+			}
+		}
+	}
+
+	resultChan <- resultMap
+}
+
+func readChunk(f *os.File, chunkChan chan []byte) {
 	readBuffer := make([]byte, READ_BUFFER_SIZE)
 	leftOver := make([]byte, READ_BUFFER_SIZE)
 	validChunk := make([]byte, READ_BUFFER_SIZE*2)
@@ -125,9 +128,55 @@ func evaluate(inp string) string {
 		size := copy(validChunk, leftOver[:leftOverSize])
 		validChunk = append(validChunk[:size], readBuffer[:lastNewlineIdx]...)
 
-		processReadBuffer(validChunk, resultMap)
+		to_send := make([]byte, size+lastNewlineIdx)
+		copy(to_send, validChunk)
+		chunkChan <- to_send
 
 		leftOverSize = copy(leftOver, readBuffer[lastNewlineIdx+1:n])
+	}
+
+	close(chunkChan)
+}
+
+func evaluate(inp string) string {
+	chunksChan := make(chan []byte, 1000000)
+	resultChan := make(chan map[string][]int)
+
+	// {"city": [min, sum, max, count]}
+	resultMap := make(map[string][]int)
+
+	f, err := os.Open(inp)
+	check(err)
+	defer f.Close()
+
+	go readChunk(f, chunksChan)
+
+	var wg sync.WaitGroup
+	// go processReadBuffer(chunksChan, resultChan)
+	for i := 0; i < CONCURENT_GRADE; i++ {
+		wg.Add(1)
+		go func() {
+			processReadBuffer(chunksChan, resultChan)
+			wg.Done()
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	for r := range resultChan {
+		for k, v := range r {
+			if _, ok := resultMap[k]; ok {
+				resultMap[k][0] = min(resultMap[k][0], v[0])
+				resultMap[k][1] = resultMap[k][1] + v[1]
+				resultMap[k][2] = max(resultMap[k][2], v[2])
+				resultMap[k][3] = resultMap[k][3] + v[3]
+			} else {
+				resultMap[k] = v
+			}
+		}
 	}
 
 	computedValues := make([]computedValue, len(resultMap))
