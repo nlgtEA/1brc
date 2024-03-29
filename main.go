@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	READ_BUFFER_SIZE = 1024 * 1024 * 20
+	READ_BUFFER_SIZE = 1024 * 1024 * 30
 	CONCURENT_GRADE  = 4
 )
 
@@ -95,15 +95,16 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 			name := string(line[:idx])
 			temp := parseTempToInt(line[idx+1:])
 
-			if _, ok := resultMap[name]; ok {
-				if temp < resultMap[name][0] {
-					resultMap[name][0] = temp
+			if v, ok := resultMap[name]; ok {
+				if temp < v[0] {
+					v[0] = temp
 				}
-				if temp > resultMap[name][2] {
-					resultMap[name][2] = temp
+				if temp > v[2] {
+					v[2] = temp
 				}
-				resultMap[name][1] += temp
-				resultMap[name][3]++
+				v[1] += temp
+				v[3]++
+				resultMap[name] = v
 			} else {
 				resultMap[name] = []int{temp, temp, temp, 1}
 			}
@@ -173,11 +174,13 @@ func evaluate(inp string) string {
 
 	for r := range resultChan {
 		for k, v := range r {
-			if _, ok := resultMap[k]; ok {
-				resultMap[k][0] = min(resultMap[k][0], v[0])
-				resultMap[k][1] = resultMap[k][1] + v[1]
-				resultMap[k][2] = max(resultMap[k][2], v[2])
-				resultMap[k][3] = resultMap[k][3] + v[3]
+			if val, ok := resultMap[k]; ok {
+				val[0] = min(val[0], v[0])
+				val[1] = val[1] + v[1]
+				val[2] = max(val[2], v[2])
+				val[3] = val[3] + v[3]
+
+				resultMap[k] = val
 			} else {
 				resultMap[k] = v
 			}
