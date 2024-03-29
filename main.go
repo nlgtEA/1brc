@@ -81,34 +81,63 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 	resultMap := make(map[string][]int)
 
 	for validChunk := range chunk_chans {
-		lines := bytes.Split(validChunk, []byte{'\n'})
+		prevIdx := 0
+		name := ""
+		temp := 0
 
-		for _, line := range lines {
-			idx := 0
-			for i, v := range line {
-				if v == ';' {
-					idx = i
-					break
-				}
-			}
+		for idx, b := range validChunk {
+			if b == ';' {
+				name = string(validChunk[prevIdx:idx])
+				prevIdx = idx + 1
+			} else if b == '\n' {
+				temp = parseTempToInt(validChunk[prevIdx:idx])
+				prevIdx = idx + 1
 
-			name := string(line[:idx])
-			temp := parseTempToInt(line[idx+1:])
+				if v, ok := resultMap[name]; ok {
+					if temp < v[0] {
+						v[0] = temp
+					}
+					if temp > v[2] {
+						v[2] = temp
+					}
+					v[1] += temp
+					v[3]++
+					resultMap[name] = v
+				} else {
+					resultMap[name] = []int{temp, temp, temp, 1}
+				}
 
-			if v, ok := resultMap[name]; ok {
-				if temp < v[0] {
-					v[0] = temp
-				}
-				if temp > v[2] {
-					v[2] = temp
-				}
-				v[1] += temp
-				v[3]++
-				resultMap[name] = v
-			} else {
-				resultMap[name] = []int{temp, temp, temp, 1}
 			}
 		}
+
+		// lines := bytes.Split(validChunk, []byte{'\n'})
+
+		// for _, line := range lines {
+		// 	idx := 0
+		// 	for i, v := range line {
+		// 		if v == ';' {
+		// 			idx = i
+		// 			break
+		// 		}
+		// 	}
+
+		// 	name := string(line[:idx])
+		// 	temp := parseTempToInt(line[idx+1:])
+
+		// 	if v, ok := resultMap[name]; ok {
+		// 		if temp < v[0] {
+		// 			v[0] = temp
+		// 		}
+		// 		if temp > v[2] {
+		// 			v[2] = temp
+		// 		}
+		// 		v[1] += temp
+		// 		v[3]++
+		// 		resultMap[name] = v
+		// 	} else {
+		// 		resultMap[name] = []int{temp, temp, temp, 1}
+		// 	}
+		// }
 	}
 
 	resultChan <- resultMap
@@ -134,9 +163,9 @@ func readChunk(f *os.File, chunkChan chan []byte, wg *sync.WaitGroup, resultChan
 		lastNewlineIdx := bytes.LastIndex(readBuffer[:n], []byte{'\n'})
 
 		size := copy(validChunk, leftOver[:leftOverSize])
-		validChunk = append(validChunk[:size], readBuffer[:lastNewlineIdx]...)
+		validChunk = append(validChunk[:size], readBuffer[:lastNewlineIdx+1]...)
 
-		to_send := make([]byte, size+lastNewlineIdx)
+		to_send := make([]byte, size+lastNewlineIdx+1)
 		copy(to_send, validChunk)
 		chunkChan <- to_send
 

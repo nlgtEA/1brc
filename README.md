@@ -25,6 +25,7 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 |4| Using concurrency with 6 worker in total including main thread  | 1:27.80 | The chunk size of 20MB and 6 gouroutines seems to be the sweet spot. Other set up are drastically slower, usually take around 3m50s. And not sure why it's not faster in the case of 1M row file. | - |
 |5| Replace bytes.Split with finding ; manually  | 52.513 | - | - |
 |6| Reduce hash map read, and find new optimal chunk size  | 44.495 | - | - |
+|7| Manually parse valid chunk instead of using split bytes  | 39.524 | - | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
@@ -43,3 +44,4 @@ make bench
 | 4 | 241ms |  |
 | 5 | 175ms |  |
 | 6 | 117ms |  |
+| 7 | 108ms |  |
