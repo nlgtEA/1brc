@@ -18,7 +18,7 @@ import (
 
 const (
 	READ_BUFFER_SIZE = 1024 * 1024 * 20
-	CONCURENT_GRADE  = 6
+	CONCURENT_DEGREE = 6
 )
 
 var file_path = flag.String("file", "test_cases/measurements-10.txt", "path to the file")
@@ -85,7 +85,7 @@ func parseTempToInt(rawTemp []byte) int {
 }
 
 func processReadBuffer(chunk_chans chan []byte, resultChan chan *swiss.Map[string, []int]) {
-	resultMap := swiss.NewMap[string, []int](42)
+	resultMap := swiss.NewMap[string, []int](1800)
 
 	for validChunk := range chunk_chans {
 		prevIdx := 0
@@ -123,8 +123,8 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan *swiss.Map[strin
 
 func readChunk(f *os.File, chunkChan chan []byte, wg *sync.WaitGroup, resultChan chan *swiss.Map[string, []int]) {
 	readBuffer := make([]byte, READ_BUFFER_SIZE)
-	leftOver := make([]byte, READ_BUFFER_SIZE)
-	validChunk := make([]byte, READ_BUFFER_SIZE*2)
+	leftOver := make([]byte, 1024)
+	validChunk := make([]byte, READ_BUFFER_SIZE+1024)
 
 	leftOverSize := 0
 
@@ -161,14 +161,14 @@ func evaluate(inp string) string {
 	resultChan := make(chan *swiss.Map[string, []int], 10)
 
 	// {"city": [min, sum, max, count]}
-	resultMap := swiss.NewMap[string, []int](42)
+	resultMap := swiss.NewMap[string, []int](10000)
 
 	f, err := os.Open(inp)
 	check(err)
 	defer f.Close()
 
 	var wg sync.WaitGroup
-	for i := 0; i < CONCURENT_GRADE; i++ {
+	for i := 0; i < CONCURENT_DEGREE; i++ {
 		wg.Add(1)
 		go func() {
 			processReadBuffer(chunksChan, resultChan)
