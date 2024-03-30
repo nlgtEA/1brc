@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"unsafe"
+
+	"github.com/dolthub/swiss"
 )
 
 const (
@@ -82,8 +84,8 @@ func parseTempToInt(rawTemp []byte) int {
 	return temp
 }
 
-func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int) {
-	resultMap := make(map[string][]int)
+func processReadBuffer(chunk_chans chan []byte, resultChan chan *swiss.Map[string, []int]) {
+	resultMap := swiss.NewMap[string, []int](42)
 
 	for validChunk := range chunk_chans {
 		prevIdx := 0
@@ -98,7 +100,7 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 				temp = parseTempToInt(validChunk[prevIdx:idx])
 				prevIdx = idx + 1
 
-				if v, ok := resultMap[name]; ok {
+				if v, ok := resultMap.Get(name); ok {
 					if temp < v[0] {
 						v[0] = temp
 					}
@@ -107,9 +109,9 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 					}
 					v[1] += temp
 					v[3]++
-					resultMap[name] = v
+					resultMap.Put(name, v)
 				} else {
-					resultMap[name] = []int{temp, temp, temp, 1}
+					resultMap.Put(name, []int{temp, temp, temp, 1})
 				}
 
 			}
@@ -119,7 +121,7 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 	resultChan <- resultMap
 }
 
-func readChunk(f *os.File, chunkChan chan []byte, wg *sync.WaitGroup, resultChan chan map[string][]int) {
+func readChunk(f *os.File, chunkChan chan []byte, wg *sync.WaitGroup, resultChan chan *swiss.Map[string, []int]) {
 	readBuffer := make([]byte, READ_BUFFER_SIZE)
 	leftOver := make([]byte, READ_BUFFER_SIZE)
 	validChunk := make([]byte, READ_BUFFER_SIZE*2)
@@ -156,17 +158,16 @@ func readChunk(f *os.File, chunkChan chan []byte, wg *sync.WaitGroup, resultChan
 
 func evaluate(inp string) string {
 	chunksChan := make(chan []byte, 10)
-	resultChan := make(chan map[string][]int, 10)
+	resultChan := make(chan *swiss.Map[string, []int], 10)
 
 	// {"city": [min, sum, max, count]}
-	resultMap := make(map[string][]int)
+	resultMap := swiss.NewMap[string, []int](42)
 
 	f, err := os.Open(inp)
 	check(err)
 	defer f.Close()
 
 	var wg sync.WaitGroup
-	// go processReadBuffer(chunksChan, resultChan)
 	for i := 0; i < CONCURENT_GRADE; i++ {
 		wg.Add(1)
 		go func() {
@@ -178,27 +179,31 @@ func evaluate(inp string) string {
 	go readChunk(f, chunksChan, &wg, resultChan)
 
 	for r := range resultChan {
-		for k, v := range r {
-			if val, ok := resultMap[k]; ok {
+		r.Iter(func(k string, v []int) (stop bool) {
+			if val, ok := resultMap.Get(k); ok {
 				val[0] = min(val[0], v[0])
 				val[1] = val[1] + v[1]
 				val[2] = max(val[2], v[2])
 				val[3] = val[3] + v[3]
-
-				resultMap[k] = val
+				resultMap.Put(k, val)
 			} else {
-				resultMap[k] = v
+				resultMap.Put(k, v)
 			}
-		}
+
+			return false
+		})
+
 	}
 
-	computedValues := make([]computedValue, len(resultMap))
+	computedValues := make([]computedValue, resultMap.Count())
 
 	count := 0
-	for k, v := range resultMap {
+	resultMap.Iter(func(k string, v []int) (stop bool) {
 		computedValues[count] = computedValue{k, float64(v[0]) / 10, math.Round(float64(v[1])/float64(v[3])) / 10, float64(v[2]) / 10}
 		count++
-	}
+		return false
+	})
+
 	sort.Slice(computedValues, func(i, j int) bool {
 		return computedValues[i].city < computedValues[j].city
 	})
