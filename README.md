@@ -26,6 +26,7 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 |5| Replace bytes.Split with finding ; manually  | 52.513 | - | - |
 |6| Reduce hash map read, and find new optimal chunk size  | 44.495 | - | - |
 |7| Manually parse valid chunk instead of using split bytes  | 39.524 | - | - |
+|7.1| Change back chunk size to 20MB  | 34.692 | - | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.

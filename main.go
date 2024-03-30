@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	READ_BUFFER_SIZE = 1024 * 1024 * 30
+	READ_BUFFER_SIZE = 1024 * 1024 * 20
 	CONCURENT_GRADE  = 4
 )
 
@@ -109,35 +109,6 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 
 			}
 		}
-
-		// lines := bytes.Split(validChunk, []byte{'\n'})
-
-		// for _, line := range lines {
-		// 	idx := 0
-		// 	for i, v := range line {
-		// 		if v == ';' {
-		// 			idx = i
-		// 			break
-		// 		}
-		// 	}
-
-		// 	name := string(line[:idx])
-		// 	temp := parseTempToInt(line[idx+1:])
-
-		// 	if v, ok := resultMap[name]; ok {
-		// 		if temp < v[0] {
-		// 			v[0] = temp
-		// 		}
-		// 		if temp > v[2] {
-		// 			v[2] = temp
-		// 		}
-		// 		v[1] += temp
-		// 		v[3]++
-		// 		resultMap[name] = v
-		// 	} else {
-		// 		resultMap[name] = []int{temp, temp, temp, 1}
-		// 	}
-		// }
 	}
 
 	resultChan <- resultMap
