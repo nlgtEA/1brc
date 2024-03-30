@@ -157,8 +157,8 @@ func readChunk(f *os.File, chunkChan chan []byte, wg *sync.WaitGroup, resultChan
 }
 
 func evaluate(inp string) string {
-	chunksChan := make(chan []byte, 10)
-	resultChan := make(chan *swiss.Map[string, []int], 10)
+	chunksChan := make(chan []byte)
+	resultChan := make(chan *swiss.Map[string, []int])
 
 	// {"city": [min, sum, max, count]}
 	resultMap := swiss.NewMap[string, []int](10000)
