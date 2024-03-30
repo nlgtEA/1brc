@@ -11,15 +11,20 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"unsafe"
 )
 
 const (
 	READ_BUFFER_SIZE = 1024 * 1024 * 20
-	CONCURENT_GRADE  = 4
+	CONCURENT_GRADE  = 6
 )
 
 var file_path = flag.String("file", "test_cases/measurements-10.txt", "path to the file")
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+
+func byteSlice2String(bs []byte) string {
+	return *(*string)(unsafe.Pointer(&bs))
+}
 
 func main() {
 	flag.Parse()
@@ -87,7 +92,7 @@ func processReadBuffer(chunk_chans chan []byte, resultChan chan map[string][]int
 
 		for idx, b := range validChunk {
 			if b == ';' {
-				name = string(validChunk[prevIdx:idx])
+				name = byteSlice2String(validChunk[prevIdx:idx])
 				prevIdx = idx + 1
 			} else if b == '\n' {
 				temp = parseTempToInt(validChunk[prevIdx:idx])

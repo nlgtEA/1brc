@@ -27,6 +27,8 @@ As a baseline, the original naive Java implementation took 3:55.68 to run on thi
 |6| Reduce hash map read, and find new optimal chunk size  | 44.495 | - | - |
 |7| Manually parse valid chunk instead of using split bytes  | 39.524 | - | - |
 |7.1| Change back chunk size to 20MB  | 34.692 | - | - |
+|8| Use unsafe byte slice to string  | 28.591 | - | - |
+|8.1| Finding best combination of concurrent degree and chunk size  | 24.063 | - | - |
 
 ## 🚀 Bechmark Results
 The overall results above is ran on my machine with many other running processes so it might vary.
@@ -46,3 +48,5 @@ make bench
 | 5 | 175ms |  |
 | 6 | 117ms |  |
 | 7 | 108ms |  |
+| 8 | 88ms |  |
+| 8.1 | 88ms |  |
